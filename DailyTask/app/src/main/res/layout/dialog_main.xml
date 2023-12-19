@@ -24,23 +24,21 @@
                 android:hint="Masukkan Tugas"
                 android:padding="12dp"
                 android:gravity="top"
-                android:lines="6"
+                android:lines="5"
                 android:background="@android:drawable/editbox_background"/>
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/btn_pick_date"
                 android:text="Pilih Tanggal"
-                android:layout_marginTop="8dp"/>
-
-
+                android:layout_marginTop="12dp"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btn_submit"
                 android:text="Submit"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="1dp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

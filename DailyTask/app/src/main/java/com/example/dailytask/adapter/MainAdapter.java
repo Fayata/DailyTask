@@ -58,7 +58,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         try {
             JSONObject object = jsonArray.getJSONObject(position);
             holder.tvText.setText(object.getString("text"));
-            holder.tvDate.setText("Deadline: " + object.getString("deadline"));  // Tampilkan tenggat waktu
+            holder.tvDate.setText("Deadline: " + object.getString("deadline"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -165,5 +165,3 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         }
     }
 }
-
-

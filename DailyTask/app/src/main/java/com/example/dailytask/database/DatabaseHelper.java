@@ -1,13 +1,19 @@
 package com.example.dailytask.database;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -51,7 +57,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         database.close();
     }
 
-
     public void delete(String id) {
         SQLiteDatabase database = getWritableDatabase();
         //delete
@@ -60,6 +65,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         database.execSQL(sQuery);
         //close
         database.close();
+    }
+
+    public void deleteExpiredTasks() {
+        SQLiteDatabase database = getWritableDatabase();
+        try {
+            // Hapus tugas yang deadline-nya sudah tercapai
+            String currentDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(new Date());
+            String sQuery = "delete from " + TableName + " where deadline < '" + currentDate + "'";
+            // Eksekusi
+            database.execSQL(sQuery);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("DatabaseHelper", "Error deleting expired tasks: " + e.getMessage());
+        } finally {
+            // Tutup koneksi
+            database.close();
+        }
     }
 
     public void truncate() {
@@ -78,7 +100,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public JSONArray getArray() {
         SQLiteDatabase database = getReadableDatabase();
         JSONArray jsonArray = new JSONArray();
-        String sQuery = "select * from " + TableName;
+        String sQuery = "select * from " + TableName + " order by deadline";
         Cursor cursor = database.rawQuery(sQuery, null);
         if (cursor.moveToFirst()) {
             do {
@@ -87,7 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     object.put("id", cursor.getString(0));
                     object.put("text", cursor.getString(1));
                     object.put("date", cursor.getString(2));
-                    object.put("deadline", cursor.getString(3));  // Tambahkan kolom deadline
+                    object.put("deadline", cursor.getString(3));
                     jsonArray.put(object);
                 } catch (JSONException e) {
                     e.printStackTrace();
