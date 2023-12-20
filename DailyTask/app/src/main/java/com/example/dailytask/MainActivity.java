@@ -2,9 +2,14 @@ package com.example.dailytask;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +20,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,12 +30,18 @@ import com.example.dailytask.adapter.MainAdapter;
 import com.example.dailytask.database.DatabaseHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String CHANNEL_ID = "MyChannel";
+    private int notificationId = 1;
 
     RecyclerView recyclerView;
     FloatingActionButton btAdd;
@@ -166,12 +180,43 @@ public class MainActivity extends AppCompatActivity {
     // Fungsi untuk melakukan hapus otomatis tugas yang deadline-nya sudah tercapai
     private void performAutoDelete() {
         try {
+            // Mengambil tugas yang dihapus karena deadline tercapai
+            JSONArray deletedTasks = databaseHelper.getExpiredTasks();
+            // Menghapus tugas dari database
             databaseHelper.deleteExpiredTasks();
             adapter.updateArray(databaseHelper.getArray());
             adapter.notifyDataSetChanged();
+
+            // Menampilkan notifikasi untuk setiap tugas yang dihapus
+            for (int i = 0; i < deletedTasks.length(); i++) {
+                JSONObject task = deletedTasks.getJSONObject(i);
+                showNotification("Deadline Terlewat", task.getString("text"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("MainActivity", "Error performing auto delete: " + e.getMessage());
         }
+    }
+
+    // Fungsi untuk menampilkan notifikasi
+    private void showNotification(String title, String content) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(notificationId++, builder.build());
     }
 }

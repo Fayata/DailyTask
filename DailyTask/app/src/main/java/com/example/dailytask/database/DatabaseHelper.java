@@ -119,4 +119,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return jsonArray;
     }
+
+    public JSONArray getExpiredTasks() {
+        SQLiteDatabase database = getReadableDatabase();
+        JSONArray jsonArray = new JSONArray();
+        String currentDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(new Date());
+        String sQuery = "SELECT * FROM " + TableName + " WHERE deadline < ?";
+
+        Cursor cursor = database.rawQuery(sQuery, new String[]{currentDate});
+
+        if (cursor.moveToFirst()) {
+            do {
+                JSONObject object = new JSONObject();
+                try {
+                    object.put("id", cursor.getString(0));
+                    object.put("text", cursor.getString(1));
+                    object.put("date", cursor.getString(2));
+                    object.put("deadline", cursor.getString(3));
+                    jsonArray.put(object);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return jsonArray;
+    }
 }
